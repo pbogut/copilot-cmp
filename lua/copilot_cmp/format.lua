@@ -138,23 +138,31 @@ local function handle_suffix(text, suffix)
   return res
 end
 
-format.format_item = function(item, ctx, opts)
+format.format_item = function(item, ctx, opts, trim)
   if opts.fix_pairs then
     item.text = handle_suffix(item.text, ctx.cursor_after_line)
     item.displayText = handle_suffix(item.displayText, ctx.cursor_after_line)
   end
 
   local multi_line = format.to_multi_line(item, ctx)
+  local kind_text = 'Copilot';
+  local suffix = '';
+
+  if trim then
+    multi_line.text = format.split(multi_line.text)[1]
+    kind_text = 'CopLine';
+    suffix = ' '
+  end
 
   return {
     copilot = true, -- for comparator, only availiable in panel, not cycling
     score = item.score or nil,
-    label = multi_line.label,
+    label = multi_line.label .. suffix,
     filterText = multi_line.newText,
     kind = 1,
     cmp = {
       kind_hl_group = "CmpItemKindCopilot",
-      kind_text = 'Copilot',
+      kind_text = kind_text
     },
     textEdit = {
       -- use trim text here so it doesn't add extra indent

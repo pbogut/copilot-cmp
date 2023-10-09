@@ -16,12 +16,25 @@ methods.getCompletionsCycling = function (self, params, callback)
     end
 
     local items = vim.tbl_map(function(item)
-      return format.format_item(item, params.context, methods.opts)
+      return format.format_item(item, params.context, methods.opts, false)
     end, vim.tbl_values(response.completions))
+
+    local items2 = vim.tbl_map(function(item)
+      return format.format_item(item, params.context, methods.opts, true)
+    end, vim.tbl_values(response.completions))
+
+    local items3 = {}
+
+    for i = 1, #items, 1 do
+      items3[#items3 + 1] = items2[i]
+      if items2[i].textEdit.newText ~= items[i].textEdit.newText then
+        items3[#items3 + 1] = items[i]
+      end
+    end
 
     return callback({
       isIncomplete = false,
-      items = items
+      items = items3
     })
   end
 
